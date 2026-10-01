@@ -1,0 +1,73 @@
+# Local environment: LocalStack (DynamoDB, S3, SQS) + Redis + API + worker + web.
+#   docker compose up --build        -> http://localhost:3000
+# Host ports are overridable (e.g. LOCALSTACK_PORT=4567) if another project already uses them.
+name: printroom
+
+services:
+  localstack:
+    image: localstack/localstack:4.9
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    environment:
+      SERVICES: dynamodb,s3,sqs
+      AWS_DEFAULT_REGION: us-east-1
+      # Presigned URLs are opened by the browser at localhost:4566.
+      LOCALSTACK_HOST: localhost:${LOCALSTACK_PORT:-4566}
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:-}
+    volumes:
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d:ro
+    healthcheck:
+      # Healthy only once the init script has created every resource.
+      test: ["CMD-SHELL", "curl -fsS localhost:4566/_localstack/init/ready | grep -q '\"completed\": true' && ! curl -fsS localhost:4566/_localstack/init/ready | grep -q ERROR"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  # API tier: serves HTTP only.
+  api:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment: &backend-env
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_PUBLIC_ENDPOINT: http://localhost:${LOCALSTACK_PORT:-4566}
+      MEDIA_CDN_BASE_URL: http://localhost:${LOCALSTACK_PORT:-4566}/instagram-media
+      REDIS_HOST: redis
+      JWT_SECRET: local-dev-secret-change-me-please-32bytes-min!!
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      # Low threshold locally so the celebrity (fan-out-on-read) path is easy to exercise.
+      FEED_CELEBRITY_THRESHOLD: ${FEED_CELEBRITY_THRESHOLD:-3}
+      WORKERS_ENABLED: "false"
+    depends_on:
+      localstack: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  # Worker tier: same image, consumes the media-events and feed-fanout queues.
+  worker:
+    build: ./backend
+    environment:
+      <<: *backend-env
+      WORKERS_ENABLED: "true"
+    depends_on:
+      localstack: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  web:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: http://api:8080
+    depends_on:
+      - api

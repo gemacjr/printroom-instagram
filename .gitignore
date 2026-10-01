@@ -1,0 +1,40 @@
+# Java
+backend/target/
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/coverage/
+# Terraform
+infra/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+# Misc
+.DS_Store
+.idea/
+*.iml
+.env
+newman.xml
+.remember/
+
+# Added before first GitHub push
+node_modules/
+.next/
+out/
+dist/
+build/
+target/
+target.nosync/
+.gradle/
+.terraform/
+.env.*
+!.env.example
+.vscode/
+.superpowers/
+.worktrees/
+.playwright-mcp/
+.venv/
+graphify-out/
+Pods/
+*.log

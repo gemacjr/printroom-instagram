@@ -1,0 +1,77 @@
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: instagram-api
+  threads:
+    virtual:
+      enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      timeout: 2s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+app:
+  jwt:
+    # Must be >= 32 bytes. Injected from Secrets Manager in prod.
+    secret: ${JWT_SECRET:local-dev-secret-change-me-please-32bytes-min!!}
+    ttl: ${JWT_TTL:PT24H}
+  aws:
+    region: ${AWS_REGION:us-east-1}
+    # Set only for LocalStack. Empty => real AWS endpoints + default credential chain.
+    endpoint: ${AWS_ENDPOINT:}
+    # Endpoint the *browser* uses for presigned URLs (localstack container host differs from localhost).
+    public-endpoint: ${AWS_PUBLIC_ENDPOINT:}
+  tables:
+    users: ${TABLE_USERS:instagram-users}
+    usernames: ${TABLE_USERNAMES:instagram-usernames}
+    posts: ${TABLE_POSTS:instagram-posts}
+    follows: ${TABLE_FOLLOWS:instagram-follows}
+    media: ${TABLE_MEDIA:instagram-media}
+  media:
+    bucket: ${MEDIA_BUCKET:instagram-media}
+    # Public base URL media is served from: CloudFront domain in prod, LocalStack S3 locally.
+    cdn-base-url: ${MEDIA_CDN_BASE_URL:http://localhost:4566/instagram-media}
+    presign-ttl: PT15M
+    max-image-bytes: 8388608          # 8 MB
+    max-video-bytes: 4294967296       # 4 GB
+    multipart-threshold-bytes: 104857600   # uploads above 100MB use multipart
+    multipart-part-bytes: 104857600        # 100MB parts (S3 allows 5MB..5GB, max 10k parts)
+  queues:
+    media-events: ${QUEUE_MEDIA_EVENTS:instagram-media-events}
+    feed-fanout: ${QUEUE_FEED_FANOUT:instagram-feed-fanout}
+  feed:
+    # Authors with at least this many followers are NOT fanned out on write;
+    # their posts are merged into followers' feeds at read time.
+    celebrity-threshold: ${FEED_CELEBRITY_THRESHOLD:100000}
+    max-cached-entries: 500
+    fanout-batch-size: 100
+    default-page-size: 20
+    max-page-size: 50
+  workers:
+    # The same artifact runs as API (workers disabled) or worker tier (enabled) in prod.
+    enabled: ${WORKERS_ENABLED:true}
+    poll-wait-seconds: 20
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

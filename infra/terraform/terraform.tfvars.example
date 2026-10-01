@@ -1,0 +1,6 @@
+region              = "us-east-1"
+environment         = "prod"
+image_tag           = "v1"
+# certificate_arn   = "arn:aws:acm:us-east-1:123456789012:certificate/..."
+# app_origin        = "https://printroom.example.com"
+celebrity_threshold = 100000

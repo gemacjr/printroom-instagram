@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #e9ece8;
+  --print: #ffffff;
+  --ink: #1b2422;
+  --silver: #6f7976;
+  --rule: #d3d8d4;
+  --cyan: #1d4f91;
+  --cyan-press: #163d71;
+  --danger: #b3261e;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-print: var(--print);
+  --color-ink: var(--ink);
+  --color-silver: var(--silver);
+  --color-rule: var(--rule);
+  --color-cyan: var(--cyan);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-schibsted);
+  --font-serif: var(--font-instrument);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  background: var(--paper);
+  font-family: var(--font-schibsted), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* The one signature element: every post is a print on a white mat. */
+.print {
+  background: var(--print);
+  padding: 14px 14px 18px;
+  box-shadow: 0 1px 0 var(--rule), 0 12px 24px -18px rgb(27 36 34 / 0.35);
+}
+
+.caption {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-size: 1.125rem;
+  line-height: 1.4;
+  max-width: 62ch;
+}
+
+.wordmark {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-size: 1.75rem;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 6px;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 120ms ease;
+}
+.btn-primary {
+  background: var(--cyan);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--cyan-press);
+}
+.btn-secondary {
+  background: var(--print);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.field {
+  width: 100%;
+  border-radius: 6px;
+  background: var(--print);
+  box-shadow: inset 0 0 0 1px var(--rule);
+  padding: 0.6rem 0.75rem;
+}
+.field:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--cyan);
+}
+
+.carousel-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--ink);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.carousel-btn:disabled {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
